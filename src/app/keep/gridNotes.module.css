@@ -1,0 +1,19 @@
+.gridContainer {
+  padding: 10px;
+  border-radius: 5px;
+  
+}
+
+.itemNote {
+  /* border: 2px solid #ffa94d; */
+  border-radius: 5px;
+  margin: 16px;
+}
+
+.gridContainer {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 240px));
+  grid-template-rows: auto;
+  justify-content: start;
+}
