@@ -6,6 +6,18 @@ export const notesApi = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:5256' }),
   tagTypes: ['Notes', 'Tags'],
   endpoints: (builder) => ({
+    searchNote: builder.query<NoteRead[], string>({
+      query: (search) => `notes?search=${encodeURIComponent(search)}`,
+      providesTags: ['Notes'],
+    }),
+    searchNoteByTag: builder.query<NoteRead[], string>({
+      query: (tag) => `notes?tag=${encodeURIComponent(tag)}`,
+      providesTags: ['Notes'],
+    }),
+    searchTag: builder.query<Tag[], string>({
+      query: (search) => `tags?search=${encodeURIComponent(search)}`,
+      providesTags: ['Tags'],
+    }),
     getNotes: builder.query<NoteRead[], void>({
       query: () => 'notes',
       providesTags: ['Notes'],
@@ -20,7 +32,7 @@ export const notesApi = createApi({
         method: 'POST',
         body: note,
       }),
-      invalidatesTags: ['Notes'],
+      invalidatesTags: ['Notes', 'Tags'],
     }),
     deleteNote: builder.mutation<void, number>({
       query: (id) => ({
@@ -34,7 +46,7 @@ export const notesApi = createApi({
         url: `tags/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['Tags'],
+      invalidatesTags: ['Tags', 'Notes'],
     }),
     removeTagFromNote: builder.mutation<
       void,

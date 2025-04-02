@@ -9,6 +9,7 @@ import {
   useDeleteNoteMutation,
   useUpdateTagsMutation,
   useRemoveTagFromNoteMutation,
+  useDeleteTagMutation,
 } from '../services/notesApi';
 import { extractLinks } from '../helpers/utils';
 import AlertMessage from '../components/common/AlertMessage';
@@ -22,6 +23,7 @@ export const NotesProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const { data: tags = [] } = useGetTagsQuery();
   const [addNoteMutation] = useAddNoteMutation();
   const [deleteNoteMutation] = useDeleteNoteMutation();
+  const [deleteTagMutation] = useDeleteTagMutation();
   const [updateTagsMutation] = useUpdateTagsMutation();
   const [removeTagFromNoteMutation] = useRemoveTagFromNoteMutation();
 
@@ -55,7 +57,7 @@ export const NotesProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const deleteTag = useCallback(
     async (tag: Tag) => {
       try {
-        await deleteNoteMutation(tag.id).unwrap();
+        await deleteTagMutation(tag.id).unwrap();
       } catch (error) {
         console.error('Error deleting tag:', error);
         setAlertMessage(
@@ -63,7 +65,7 @@ export const NotesProvider: FC<{ children: ReactNode }> = ({ children }) => {
         );
       }
     },
-    [deleteNoteMutation],
+    [deleteTagMutation],
   );
 
   const fetchLinkPreviews = useCallback(
