@@ -10,7 +10,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 export default function Notes() {
   const [showAddNote, setShowAddNote] = useState(false);
 
-  const { search, setSearch } = useNotesContext();
+  const { search, searchNotes } = useNotesContext();
 
   const toggleShowAddNote = () => setShowAddNote(!showAddNote);
 
@@ -51,7 +51,7 @@ export default function Notes() {
                 className="w-full rounded-md border p-2"
                 placeholder="Buscar notas..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => searchNotes(e.target.value)}
                 aria-label="Buscar notas"
               />
             </div>

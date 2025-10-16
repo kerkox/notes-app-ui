@@ -3,13 +3,9 @@ import { NoteCreate, NoteRead, Tag } from '../types';
 
 export const notesApi = createApi({
   reducerPath: 'notesApi',
-  baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:5256' }),
+  baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:3000' }),
   tagTypes: ['Notes', 'Tags'],
   endpoints: (builder) => ({
-    searchNote: builder.query<NoteRead[], string>({
-      query: (search) => `notes?search=${encodeURIComponent(search)}`,
-      providesTags: ['Notes'],
-    }),
     searchNoteByTag: builder.query<NoteRead[], string>({
       query: (tag) => `notes?tag=${encodeURIComponent(tag)}`,
       providesTags: ['Notes'],
@@ -18,8 +14,9 @@ export const notesApi = createApi({
       query: (search) => `tags?search=${encodeURIComponent(search)}`,
       providesTags: ['Tags'],
     }),
-    getNotes: builder.query<NoteRead[], void>({
-      query: () => 'notes',
+    getNotes: builder.query<NoteRead[], { search?: string }>({
+      query: ({ search }) =>
+        search ? `notes?search=${encodeURIComponent(search)}` : 'notes',
       providesTags: ['Notes'],
     }),
     getTags: builder.query<Tag[], void>({
@@ -72,6 +69,14 @@ export const notesApi = createApi({
       }),
       invalidatesTags: ['Tags'],
     }),
+    updateNote: builder.mutation<void, Partial<NoteCreate>>({
+      query: (note) => ({
+        url: `notes/${note.id}`,
+        method: 'PUT',
+        body: note,
+      }),
+      invalidatesTags: ['Notes', 'Tags'],
+    }),
   }),
 });
 
@@ -84,4 +89,12 @@ export const {
   useUpdateTagsMutation,
   useRemoveTagFromNoteMutation,
   useDeleteTagMutation,
+  useSearchTagQuery,
+  useSearchNoteByTagQuery,
+  useLazyGetLinkPreviewQuery,
+  useLazySearchTagQuery,
+  useLazySearchNoteByTagQuery,
+  useUpdateNoteMutation,
+  useLazyGetNotesQuery,
+  useLazyGetTagsQuery,
 } = notesApi;

@@ -1,31 +1,41 @@
 'use client';
-import React, { FC, ReactNode, useCallback, useMemo, useState } from 'react';
+import React, {
+  FC,
+  ReactNode,
+  useCallback,
+  useMemo,
+  useState,
+  useEffect,
+} from 'react';
 import { NotesContext, NotesContextType } from '../context/NotesContext';
 import { LinkPreview, NoteCreate, NoteRead, Tag } from '../types';
 import {
-  useGetNotesQuery,
   useGetTagsQuery,
   useAddNoteMutation,
   useDeleteNoteMutation,
   useUpdateTagsMutation,
   useRemoveTagFromNoteMutation,
   useDeleteTagMutation,
+  useLazyGetNotesQuery,
+  // useLazySearchTagQuery,
 } from '../services/notesApi';
 import { extractLinks } from '../helpers/utils';
 import AlertMessage from '../components/common/AlertMessage';
 
 export const NotesProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [search, setSearch] = useState('');
+  const [notes, setNotes] = useState<NoteRead[]>([]);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
-  const { data: notes = [] } = useGetNotesQuery();
   const { data: tags = [] } = useGetTagsQuery();
   const [addNoteMutation] = useAddNoteMutation();
   const [deleteNoteMutation] = useDeleteNoteMutation();
   const [deleteTagMutation] = useDeleteTagMutation();
   const [updateTagsMutation] = useUpdateTagsMutation();
   const [removeTagFromNoteMutation] = useRemoveTagFromNoteMutation();
+  const [triggerGetNotes] = useLazyGetNotesQuery();
+  // const [triggerSearchTag] = useLazySearchTagQuery();
 
   const toggleFilter = (tag: string) => {
     setActiveFilters((prev) =>
@@ -156,6 +166,37 @@ export const NotesProvider: FC<{ children: ReactNode }> = ({ children }) => {
     [removeTagFromNoteMutation],
   );
 
+  const fetchNotes = useCallback(
+    async (search?: string) => {
+      try {
+        const fetchedNotes = await triggerGetNotes({ search }).unwrap();
+        setNotes(fetchedNotes);
+      } catch (error) {
+        console.error('Error fetching notes:', error);
+        setAlertMessage(
+          'Error al obtener las notas. Por favor, inténtalo de nuevo.',
+        );
+      }
+    },
+    [triggerGetNotes],
+  );
+
+  const handleSearch = useCallback(
+    (query: string) => {
+      setSearch(query);
+      if (query.length >= 2) {
+        fetchNotes(query); // Buscar notas si hay al menos 2 caracteres
+      } else {
+        fetchNotes(); // Listar todas las notas si no hay búsqueda
+      }
+    },
+    [fetchNotes],
+  );
+
+  useEffect(() => {
+    fetchNotes(); // Cargar todas las notas al montar el componente
+  }, [fetchNotes]);
+
   const notesContextValue: NotesContextType = useMemo(
     () => ({
       notes,
@@ -163,7 +204,7 @@ export const NotesProvider: FC<{ children: ReactNode }> = ({ children }) => {
       deleteNote,
       tags,
       search,
-      setSearch,
+      searchNotes: handleSearch,
       activeFilters,
       toggleFilter,
       deleteTag,
@@ -182,6 +223,7 @@ export const NotesProvider: FC<{ children: ReactNode }> = ({ children }) => {
       addTag,
       fetchLinkPreviews,
       removeTagFromNote,
+      handleSearch,
     ],
   );
 
